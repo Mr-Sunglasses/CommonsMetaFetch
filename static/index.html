@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommonsMetaFetch</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="file"], input[type="submit"] {
+            margin-bottom: 20px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e6f3ff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Metadata Processing App</h1>
+    <form id="uploadForm">
+        <label>
+            <input type="file" name="file" accept=".csv,.tsv" required>
+        </label>
+        <h3>Select Metadata Options:</h3>
+        <label>
+            <input type="checkbox" name="description" checked> Description
+        </label>
+        <label>
+            <input type="checkbox" name="creation_date" checked> Creation Date
+        </label>
+        <label>
+            <input type="checkbox" name="author" checked> Author
+        </label>
+        <label>
+            <input type="checkbox" name="license" checked> License
+        </label>
+        <label>
+            <input type="checkbox" name="license_url" checked> License URL
+        </label>
+        <label>
+            <input type="checkbox" name="usage_terms" checked> Usage Terms
+        </label>
+        <input type="submit" value="Process File">
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const file = formData.get('file');
+            const options = {};
+            formData.forEach((value, key) => {
+                if (key !== 'file') {
+                    options[key] = value === 'on';
+                }
+            });
+
+            const finalFormData = new FormData();
+            finalFormData.append('file', file);
+            finalFormData.append('options', JSON.stringify(options));
+
+            try {
+                const response = await axios.post('/process/', finalFormData, {
+                    responseType: 'blob',
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'processed_metadata.tsv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                document.getElementById('result').textContent = 'File processed successfully! Downloading...';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'An error occurred while processing the file.';
+            }
+        });
+    </script>
+</body>
+</html>
