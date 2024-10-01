@@ -24,8 +24,8 @@ This application is a FastAPI-based web service that allows users to upload CSV 
 
 2. Build and run the Docker container:
    ```
-   docker build -t CommonsMetaFetch .
-   docker run -p 8000:8000 CommonsMetaFetch
+   docker build -t metafetch .
+   docker run -p 8000:8000 metafetch
    ```
 
 3. Open your web browser and navigate to `http://localhost:8000`
